@@ -7,29 +7,43 @@
             <h1>Sentences syntax analysis</h1>
             <br>
             <br>
-            <form action="/cyk">
+            <form action="{{ url_for('start_parser') }}" method="post">
+                <div class="form-group">
+                  <div class="row">
+                    <div class="col-xs-3">
+                        <a href="edit_algo">
+                        <button type="button" class="btn btn-success">Select Algorithm</button>
+
+                        </a>
+                    </div>
+                    <div class="col-xs-3">
+                        <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Current Algorigthm" value="Current: {{algorithm_name}}" disabled>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-xs-3">
+                        <a href="/edit_grammar">
+                        <button type="button" class="btn btn-success">Edit Grammar</button>
+
+                        </a>
+                    </div>
+                    <div class="col-xs-3">
+                        <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Current Algorigthm" value="Current: {{algorithm_name}} - {{grammar_name}}" disabled>
+                    </div>
+                  </div>
+                </div>                
                 <div class="form-group">
                   <label for="exampleFormControlInput1">Input</label>
                   <input type="text" name="sentences" class="form-control" id="sentences" placeholder="input Sentences">
                 </div>
-                <div class="form-group">
-                  <label for="exampleFormControlSelect1">Algorigthm</label>
-                  <select class="form-control" id="exampleFormControlSelect1">
-                    <option>CYK</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="exampleFormControlTextarea1">Grammar</label>
-                  <textarea class="form-control" id="grammar" name="grammar" rows="8">{{grammar}}</textarea>
-                </div>
-                <button class="btn btn-primary" type="submit">Submit!</button>
+                <button class="btn btn-primary" type="submit">Start Parser</button>
               </form>
         </div>
         <br>
         <br>
         <br>
         <div>
-            {{result}}
+            <!-- {{result}} -->
             <!-- <a>{{syntax}}</a> -->
             <!-- for c in inp:
             print("\t{}".format(c), end="\t")
