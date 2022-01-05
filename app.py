@@ -1,52 +1,39 @@
-from flask import Flask, render_template, Response, request
-from sentences_parser import *
-
+from os import name
+from re import L
+import os
+from flask import Flask, render_template, request
+from nltk import tree
+from config import *
+from grammar import EarleyParser, NltkGrammar, CYKParser
+import asyncio
+import time
 app = Flask(__name__)
-sentencesParser = SentencesParser()
-
-@app.route('/')
+@app.route("/", methods=["GET", "POST"])
 def index():
-    algorithm_name = sentencesParser.algorithm_name
-    grammar_name = sentencesParser.grammar_name
-    return render_template('index.html', algorithm_name = algorithm_name, grammar_name = grammar_name)
+    default_value = ""
+    sentence = request.form.get('sentence_input', default_value)
+    alg = request.form.get('alg', "CYK")
+    nltkGrammar = NltkGrammar('grammar.cfg')
+    img_paths = []
+    try:
+        if alg == "CYK":
+            parser = CYKParser(nltkGrammar.read_grammar())
+        elif alg == "Earley":
+            parser = EarleyParser(nltkGrammar.read_grammar())
+        trees = parser.parse(sentence)
+        json_trees = parser.get_tree_json(trees)
+        img_paths = parser.to_image(json_trees)
+    except:
+        img_paths = []
+    return render_template(index_template, img_paths = img_paths, sentence = sentence, alg = alg)
+    
+@app.route("/grammar")
+def change_grammar():
+    nltkGrammar = NltkGrammar('grammar.cfg')
+    list_prod_left, list_prod_right = nltkGrammar.get_productions()
+    return render_template(change_grammar_template, list_prod_left = list_prod_left, 
+                                            list_prod_right = list_prod_right, len = len(list_prod_left))
 
-@app.route('/start_parser', methods = ['POST'])
-def start_parser():
-    sentence = request.form['sentences']
-    str_trees = sentencesParser.parser(sentence)
-    sentencesParser.to_image(str_trees)
-    idx = len(str_trees)
-    filename = []
-    for i in range(0, idx):
-        fn = 'img/tree_'+str(i)+'.png'
-        filename.append(fn)
-    return render_template('start_parser.html', sentence = sentence, filename=filename)
-
-@app.route('/edit_grammar')
-def edit_grammar():
-    # sentence = request.form['sentences']
-    grammar = sentencesParser.grammar
-    return render_template('edit_grammar.html', grammar = grammar)
-
-@app.route('/edit_algo')
-def edit_algo():
-    # sentence = request.form['sentences']
-    return render_template('edit_algo.html')
-
-# @app.route('/cyk', methods = ['GET', 'POST'])
-# def cyk():
-#     grammar = get_productions()
-#     try:
-#         sentences = request.values.get('sentences')
-#         # grammar = request.values.get('grammar')
-#         terminals = getTerminals(GRAMMARPATH)
-#         variables = getVariables(GRAMMARPATH)
-#         productions = getProduction(GRAMMARPATH)
-#         goodResult = CYKAlgorithm(sentences, productions, variables, terminals)
-#         # badResult = CYKAlgorithm(INCORRECTTESTSTRING, productions, variables, terminals)
-#         return render_template('index.html', grammar = grammar, result = goodResult)
-#     except:
-#         return render_template('index.html', grammar = grammar, result = 'Cant analysis')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
